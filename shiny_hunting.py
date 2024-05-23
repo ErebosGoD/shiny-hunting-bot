@@ -1,35 +1,29 @@
 import time
-import os
 import pyautogui
 import cv2
 import numpy as np
-import json
-from PIL import ImageGrab
 from soft_reset import soft_reset
 from sequence_execution import execute_sequence
-from shinyHuntingBot.take_screenshot import take_screenshot, take_reference_screenshot
-
-# Variable für die Region des Pokémon-Kampfs
+from take_screenshot import take_screenshot
+from take_reference_screenshot import take_reference_screenshot
 
 SCREENSHOT_PATH = "current_screenshot.png"
 SOFT_RESET_COUNT = 0
 
 
-# Funktion zum Vergleichen von Screenshots
+def is_shiny_pixel(current_frame, reference_frame, x, y, threshold=50):
+    # Extrahiere die Pixelwerte an der Position (x, y)
+    current_pixel = current_frame[y, x]
+    reference_pixel = reference_frame[y, x]
 
+    # Berechne die euklidische Distanz zwischen den Pixeln
+    difference = np.linalg.norm(current_pixel - reference_pixel)
 
-def is_shiny(current_frame, reference_frame, threshold=0.012):
-    # Unterschied berechnen
-    diff = cv2.absdiff(current_frame, reference_frame)
-    gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
-    _, thresh = cv2.threshold(gray, 30, 255, cv2.THRESH_BINARY)
-    non_zero_count = np.count_nonzero(thresh)
-    total_pixels = thresh.size
-    difference_ratio = non_zero_count / total_pixels
-    print(f"Difference ratio: {difference_ratio}")
-    return difference_ratio < threshold
+    print(f"Current pixel: {current_pixel}, Reference pixel: {
+          reference_pixel}, Difference: {difference}")
 
-# Funktion zur Auswahl der Region aus einer Textdatei
+    # Vergleiche die Differenz mit dem Schwellenwert
+    return difference > threshold
 
 
 def select_region_from_file(filename):
@@ -42,55 +36,51 @@ def select_region_from_file(filename):
                 regions.append(tuple(map(int, coordinates)))
     return regions
 
-# Hauptprogramm
-
 
 def main():
     global SOFT_RESET_COUNT
+
+    PIXEL_X = 1951
+    PIXEL_Y = 316
     pokemon_is_shiny = False
-    # Benutzer die Sequenz aufzeichnen lassen
-    print("Mache eine Tastensequenz-Aufzeichnung und speichere sie als 'sequence.json'.")
-    input("Drücke Enter, wenn du bereit bist...")
+    print("Record a button sequence using record_sequence.py")
+    input("Press Enter, when you're ready...")
 
-    # Warten, bis der erste Kampf beginnt
-    input("Drücke Enter, wenn der erste Kampf beginnt...")
+    while pyautogui.getActiveWindowTitle() != "[60/60] melonDS 0.9.5":
+        time.sleep(1)
 
-    # reference_screenshot = take_reference_screenshot(
-    # "reference_screenshot.png")
+    soft_reset()
+    time.sleep(10)
+    execute_sequence('sequence.json')
 
-    while pokemon_is_shiny == False:
+    time.sleep(4.55)
+    take_reference_screenshot("reference_screenshot.png")
+
+    while not pokemon_is_shiny:
 
         while True:
-            # Soft-Reset ausführen und neuen Kampf starten
+
             soft_reset()
-            time.sleep(10)  # Warten, bis das Spiel neu gestartet ist
-            # Aufgezeichnete Sequenz laden
+            time.sleep(10)
             execute_sequence('sequence.json')
 
-            # Warten, bis der Emulator im Vordergrund ist
-            while pyautogui.getActiveWindowTitle() != "[60/60] melonDS 0.9.5":
-                time.sleep(1)
+            time.sleep(4.6)
 
-            # Warten, bis der Emulator geladen hat (ggf. anpassen)
-            time.sleep(4.5)
-
-            # Neuen Screenshot aufnehmen und vergleichen
             current_screenshot = take_screenshot(SCREENSHOT_PATH)
             reference_image = cv2.imread("reference_screenshot.png")
-            if is_shiny(current_screenshot, reference_image):
-                # Schillerndes Pokémon gefunden
-                pokemon_is_shiny = True
-                print("Schillerndes Pokémon gefunden!")
-                break
+            if current_screenshot is not None and reference_image is not None:
+                if is_shiny_pixel(current_screenshot, reference_image, PIXEL_X, PIXEL_Y):
 
-            # Aktuellen Screenshot als neuen Referenz-Screenshot speichern
-            reference_screenshot = current_screenshot
+                    pokemon_is_shiny = True
+                    print("Shiny Pokémon found!")
+                    break
 
-            time.sleep(1)  # Kurze Pause, um den Prozess stabil zu halten
+            time.sleep(1)
 
             SOFT_RESET_COUNT += 1
+            print("Current Resets:", SOFT_RESET_COUNT)
         if pokemon_is_shiny:
-            print(f"Anzahl der Soft Resets: {SOFT_RESET_COUNT}")
+            print(f"Soft Resets: {SOFT_RESET_COUNT}")
             break
 
 
