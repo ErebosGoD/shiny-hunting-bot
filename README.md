@@ -9,11 +9,12 @@ Make sure you have the following Python libraries installed:
 - `pyautogui`
 - `opencv-python`
 - `numpy`
+- `keyboard`
 
 You can install these libraries using the following command:
 
 ```sh
-pip install pyautogui opencv-python numpy
+pip install pyautogui opencv-python numpy keyboard
 ```
 
 ## Preparation
