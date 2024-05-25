@@ -5,13 +5,13 @@ from keyboard import record, wait
 
 
 def record_sequence():
-    print("Drücke die Tasten für die Sequenz zum Starten des Kampfes (ESC zum Beenden)")
+    print("Press key sequence to initiate the battle (ESC to stop)")
     recorded = record(until='esc')
     sequence = [{'name': e.name, 'event_type': e.event_type, 'time': e.time}
                 for e in recorded]
     with open('sequence.json', 'w') as f:
         json.dump(sequence, f)
-    print("Sequenz aufgezeichnet und gespeichert.")
+    print("Sequenz recorded and saved.")
 
 
 if __name__ == "__main__":
