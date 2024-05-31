@@ -25,6 +25,17 @@ def write_soft_reset_count(filename, count):
         file.write(str(count))
 
 
+def read_emulator_timings(filename):
+    try:
+        with open(filename, 'r') as file:
+            line = file.readline().strip()
+            timings = line.split(",")
+            if len(timings) == 2:
+                return float(timings[0]), float(timings[1])
+    except ValueError:
+        return 0
+
+
 def is_shiny_pixel(current_frame, reference_frame, x, y, threshold=50):
     current_pixel = current_frame[y, x]
     reference_pixel = reference_frame[y, x]
@@ -52,6 +63,8 @@ def main():
 
     pokemon_is_shiny = False
     pixel_x, pixel_y = select_pixel_from_file(r"coordinates.txt")
+    startup_time_after_reset, screenshot_time = read_emulator_timings(
+        r"timings.txt")
     print("Coordinates read successfully!")
     print("Record a button sequence using record_sequence.py")
     input("Press Enter, when you're ready...")
@@ -61,10 +74,10 @@ def main():
         time.sleep(1)
 
     soft_reset()
-    time.sleep(10)
+    time.sleep(startup_time_after_reset)
     execute_sequence('sequence.json')
 
-    time.sleep(4.6)
+    time.sleep(screenshot_time)
     take_reference_screenshot(r"screenshots\reference_screenshot.png")
 
     try:
@@ -73,10 +86,10 @@ def main():
             while True:
 
                 soft_reset()
-                time.sleep(10)
+                time.sleep(startup_time_after_reset)
                 execute_sequence('sequence.json')
 
-                time.sleep(4.6)
+                time.sleep(screenshot_time)
 
                 current_screenshot = take_screenshot(
                     r"screenshots\current_screenshot.png")
