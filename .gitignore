@@ -1,5 +1,5 @@
 *.txt
-*.json
+sequence.json
 *.png
 __pycache__/
 *.py[cod]

@@ -1,4 +1,5 @@
 import time
+import json
 import pyautogui
 import cv2
 import numpy as np
@@ -9,31 +10,15 @@ from take_reference_screenshot import take_reference_screenshot
 from savestate import savestate
 
 
-def read_soft_reset_count(filename):
-    try:
-        with open(filename, 'r') as file:
-            count = int(file.readline().strip())
-            return count
-    except FileNotFoundError:
-        return 0  # Datei existiert nicht, also beginnen wir bei 0
-    except ValueError:
-        return 0  # Fehler beim Lesen der Datei, also beginnen wir bei 0
+def load_config(config_path):
+    with open(config_path, "r") as file:
+        config = json.load(file)
+    return config
 
 
-def write_soft_reset_count(filename, count):
-    with open(filename, 'w') as file:
-        file.write(str(count))
-
-
-def read_emulator_timings(filename):
-    try:
-        with open(filename, 'r') as file:
-            line = file.readline().strip()
-            timings = line.split(",")
-            if len(timings) == 2:
-                return float(timings[0]), float(timings[1])
-    except ValueError:
-        return 0
+def save_config(config_path, config):
+    with open(config_path, "w") as file:
+        json.dump(config, file, indent=4)
 
 
 def is_shiny_pixel(current_frame, reference_frame, x, y, threshold=50):
@@ -48,24 +33,16 @@ def is_shiny_pixel(current_frame, reference_frame, x, y, threshold=50):
     return difference > threshold
 
 
-def select_pixel_from_file(filename):
-    with open(filename, 'r') as file:
-        line = file.readline().strip()
-        coordinates = line.split(',')
-        if len(coordinates) == 2:
-            return int(coordinates[0]), int(coordinates[1])
-    raise ValueError("Invalid coordinate format in file")
-
-
 def main():
-    SOFT_RESET_COUNT_FILE = "soft_reset_count.txt"
-    SOFT_RESET_COUNT = read_soft_reset_count(SOFT_RESET_COUNT_FILE)
-
+    CONFIG_PATH = "config.json"
+    config = load_config(CONFIG_PATH)
+    SOFT_RESET_COUNT = config["softResetCount"]
+    pixel_x, pixel_y = config["pixelCoordinates"]
     pokemon_is_shiny = False
-    pixel_x, pixel_y = select_pixel_from_file(r"coordinates.txt")
-    startup_time_after_reset, screenshot_time = read_emulator_timings(
-        r"timings.txt")
-    print("Coordinates read successfully!")
+
+    startup_time_after_reset = config["emulatorResetTimeInSeconds"]
+    screenshot_time = config["screenshotTimeInSeconds"]
+    print("Config loaded successfully!")
     print("Record a button sequence using record_sequence.py")
     input("Press Enter, when you're ready...")
 
@@ -108,7 +85,8 @@ def main():
                 SOFT_RESET_COUNT += 1
                 print("Current Resets:", SOFT_RESET_COUNT)
     finally:
-        write_soft_reset_count(SOFT_RESET_COUNT_FILE, SOFT_RESET_COUNT)
+        config["softResetCount"] = SOFT_RESET_COUNT
+        save_config(CONFIG_PATH, config)
 
 
 if __name__ == "__main__":
