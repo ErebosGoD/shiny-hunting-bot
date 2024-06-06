@@ -19,19 +19,12 @@ pip install pyautogui opencv-python numpy keyboard
 
 ## Preparation
 
-### 1. Set the coordinates of the pixel to check:
-Create a file named `coordinates.txt` and specify the x and y coordinates of the pixel to check. You can create a take a dummy screenshot the script took on its first run and examine it using Paint to search for the ideal pixel to check (especially important for moving sprites).
+### 1. Edit the `config.json` file for your hunt:
+The `config.json` file contains information about your current hunt like soft reset count, pixel coordinates, the time it takes for your chosen emulator to start after a soft reset and the time you want to take the screenshots at. To find the pixel coordinates simply input some dummy values first and let the script take an initial screenshot (after you have fine tuned the timings). From there you can open it in any image editing software to find a suitable pixel for comparison and then put these coordinates in the `config.json` file as well. 
+Lastly edit the `emulator` section of the `config.json` file to match your emulator. NOTE: The window title of the emulator should go there.
 
 ### 2. Record the button sequence:
 Use the `record_sequence.py` script to record the sequence of button presses needed to start the Pokémon encounter. The recorded sequence should be saved in a file named `sequence.json`.
-
-### 3. Emulator Window:
-Ensure that the title of your emulator window is correctly specified in the `main` function.
-
-Example:
-```python
-while pyautogui.getActiveWindowTitle() != "[60/60] melonDS 0.9.5":
-```
 
 ## Usage
 ### 1. Start your emulator and load your game
@@ -50,14 +43,14 @@ python shiny_hunting.py
 - **Save State**: If a shiny is found, the game is automatically saved(Again, you may need to edit the button sequence in `save_state.py` depending on your emulators keybinds).
 
 ## Important files
-- **`coordinates.txt`**: Contains the pixel coordinates to check
+- **`config.json`**: Contains information about current setup like emulator title, soft reset count etc.
 - **`sequence.json`**: Contains the recorded button sequence.
 - **`screenshots\reference_screenshot.png`**: Reference screenshot for comparison.
 - **`screenshots\current_screenshot.png`**: Current screenshot for comparison.
 
 ## Troubleshooting
-- **Coordinate Error**: Ensure that `coordinates.txt` contains the correct coordinates in the format `x,y`.
-- **Emulator Focus**: The script waits for the emulator window to be active. Ensure the window title is correct. The script only works, if the emulator is constantly active. If not, the button sequence gets executed in the currently active window.
+- **Coordinate Error**: Ensure that `pixelCoordinates` from the `config.json` file contains the correct coordinates in the format `x,y`.
+- **Emulator Focus**: The script waits for the emulator window to be active. Ensure the window title is correct. The script only works, if the emulator is active. If not, the button sequence execution is paused until the emulator window is active again.
 
 ## License
 This project is licensed under the MIT License. See the LICENSE file for details.

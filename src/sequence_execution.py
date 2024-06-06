@@ -5,7 +5,7 @@ import json
 # Funktion zur Ausführung einer Tastensequenz
 
 
-def execute_sequence(filename):
+def execute_sequence(filename, window_title):
     with open(filename, 'r') as file:
         sequence = json.load(file)
 
@@ -17,6 +17,12 @@ def execute_sequence(filename):
         # Verzögerung entsprechend der Zeit seit dem Start
         time.sleep(time_since_start)
         start_time = current_time  # Aktualisierung der Startzeit für die nächste Iteration
+
+        while window_title not in pyautogui.getActiveWindowTitle():
+            time.sleep(1)
+
+        # while pyautogui.getActiveWindowTitle() != window_title:
+        #    time.sleep(1)
 
         if event['event_type'] == 'down':
             pyautogui.keyDown(event['name'])

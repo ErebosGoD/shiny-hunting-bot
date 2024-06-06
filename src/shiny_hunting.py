@@ -39,6 +39,7 @@ def main():
     SOFT_RESET_COUNT = config["softResetCount"]
     pixel_x, pixel_y = config["pixelCoordinates"]
     pokemon_is_shiny = False
+    emulator = config["emulator"]
 
     startup_time_after_reset = config["emulatorResetTimeInSeconds"]
     screenshot_time = config["screenshotTimeInSeconds"]
@@ -47,12 +48,16 @@ def main():
     input("Press Enter, when you're ready...")
 
     # put your emulator window title here!
-    while pyautogui.getActiveWindowTitle() != "[60/60] melonDS 0.9.5":
+
+    while emulator not in pyautogui.getActiveWindowTitle():
         time.sleep(1)
+
+    # while pyautogui.getActiveWindowTitle() != "[60/60] melonDS 0.9.5":
+    #    time.sleep(1)
 
     soft_reset()
     time.sleep(startup_time_after_reset)
-    execute_sequence('sequence.json')
+    execute_sequence('sequence.json', emulator)
 
     time.sleep(screenshot_time)
     take_reference_screenshot(r"screenshots\reference_screenshot.png")
@@ -64,7 +69,7 @@ def main():
 
                 soft_reset()
                 time.sleep(startup_time_after_reset)
-                execute_sequence('sequence.json')
+                execute_sequence('sequence.json', emulator)
 
                 time.sleep(screenshot_time)
 
