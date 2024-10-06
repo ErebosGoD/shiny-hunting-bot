@@ -2,6 +2,7 @@ import time
 import json
 import pyautogui
 import cv2
+import os
 import numpy as np
 from soft_reset import soft_reset
 from sequence_execution import execute_sequence
@@ -55,19 +56,19 @@ def main():
     # while pyautogui.getActiveWindowTitle() != "[60/60] melonDS 0.9.5":
     #    time.sleep(1)
 
-    soft_reset()
-    time.sleep(startup_time_after_reset)
-    execute_sequence('sequence.json', emulator)
-
-    time.sleep(screenshot_time)
-    take_reference_screenshot(r"screenshots\reference_screenshot.png")
+    if not os.path.exists(r"screenshots\reference_screenshot.png"):
+        soft_reset(emulator)
+        time.sleep(startup_time_after_reset)
+        execute_sequence('sequence.json', emulator)
+        time.sleep(screenshot_time)
+        take_reference_screenshot(r"screenshots\reference_screenshot.png")
 
     try:
         while not pokemon_is_shiny:
 
             while True:
 
-                soft_reset()
+                soft_reset(emulator)
                 time.sleep(startup_time_after_reset)
                 execute_sequence('sequence.json', emulator)
 
@@ -85,7 +86,7 @@ def main():
                         print(f"Soft Resets: {SOFT_RESET_COUNT}")
                         break
 
-                time.sleep(1)
+                # time.sleep(1)
 
                 SOFT_RESET_COUNT += 1
                 print("Current Resets:", SOFT_RESET_COUNT)
